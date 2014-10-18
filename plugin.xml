@@ -67,22 +67,23 @@
         </js-module>
         -->
 
+		<!--
         <js-module src="src/blackberry10/index.js" name="TCPSocket">
             <merges target="com.tlantic.plugins.socket" />
         </js-module>
 
-        <!-- <source-file src="src/blackberry10/index.js" /> -->
         <config-file target="config.xml" parent="/*">
             <feature name="Socket">
 				<param name="blackberry10-package" value="TCPSocket" />
             </feature>
         </config-file>
-
-        <lib-file src="src/blackberry10/native/device/libTCPSocketLib.so" arch="device"/>
-        <lib-file src="src/blackberry10/native/simulator/libTCPSocketLib.so" arch="simulator"/>
         <config-file target="config.xml" parent="/widget">
 			<feature name="com.tlantic.plugins.socket" value="com.tlantic.plugins.socket" />
         </config-file>
+		-->
+		<source-file src="src/blackberry10/index.js" /> 
+        <lib-file src="src/blackberry10/native/device/libTCPSocketLib.so" arch="device"/>
+        <lib-file src="src/blackberry10/native/simulator/libTCPSocketLib.so" arch="simulator"/>
         <config-file target="config.xml" parent="/widget/rim:permissions">
 			<rim:permit>access_sms_mms</rim:permit>
 			<rim:permit>access_internet</rim:permit>

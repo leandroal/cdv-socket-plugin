@@ -44,10 +44,10 @@
    <!-- windows8 -->
     <platform name="windows8">
         <js-module src="src/windows8/Connection.js" name="Connection">
-            <merges target="" />
+            <merges target="com.tlantic.plugins.socket" />
         </js-module>          
         <js-module src="src/windows8/SocketProxy.js" name="SocketProxy">
-            <merges target="" />
+            <merges target="com.tlantic.plugins.socket" />
         </js-module>
         <config-file target="package.appxmanifest" parent="/Package/Capabilities">
             <Capability Name="internetClientServer" />
@@ -55,5 +55,38 @@
             <Capability Name="internetClient" />
         </config-file>
     </platform>    
+
+	<!-- BlackBerry 10 -->
+
+    <platform name="blackberry10">
+		<!-- <js-module src="src/blackberry10/TCPSocketImpl.js" name="TCPSocketImpl">
+			<clobbers target="com.tlantic.plugins.socket" />
+	    </js-module>
+        <js-module src="src/blackberry10/TCPSocketJNEXT.js" name="TCPSocketJNEXT">
+            <merges target="com.tlantic.plugins.socket" />
+        </js-module>
+        -->
+
+        <js-module src="src/blackberry10/index.js" name="TCPSocket">
+            <merges target="com.tlantic.plugins.socket" />
+        </js-module>
+
+        <!-- <source-file src="src/blackberry10/index.js" /> -->
+        <config-file target="config.xml" parent="/*">
+            <feature name="Socket">
+				<param name="blackberry10-package" value="TCPSocket" />
+            </feature>
+        </config-file>
+
+        <lib-file src="src/blackberry10/native/device/libTCPSocketLib.so" arch="device"/>
+        <lib-file src="src/blackberry10/native/simulator/libTCPSocketLib.so" arch="simulator"/>
+        <config-file target="config.xml" parent="/widget">
+			<feature name="com.tlantic.plugins.socket" value="com.tlantic.plugins.socket" />
+        </config-file>
+        <config-file target="config.xml" parent="/widget/rim:permissions">
+			<rim:permit>access_sms_mms</rim:permit>
+			<rim:permit>access_internet</rim:permit>
+        </config-file>
+    </platform>
 
 </plugin>

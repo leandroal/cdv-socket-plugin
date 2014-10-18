@@ -1,0 +1,123 @@
+var tcpsocket;
+var resultObjs = {};
+var threadCallback = null;
+
+exports.ping = function (success, fail, args, env) {
+    		var result = new PluginResult(args, env);
+    		params = {"message": args[0]}
+            var response = tcpsocket.getInstance().InvokeMethod("ping", params);
+            var data = JSON.parse(response);
+            console.log("ping: " + JSON.stringify(response));
+    
+            if (data.error !== undefined) {
+                result.error({
+                    code: data.error.code,
+                    message: data.error.message
+                });
+            } else {
+                result.ok({
+                    status: data.result
+                });
+            }
+};
+    
+exports.connect = function (success, fail, args, env) {
+    	var result = new PluginResult(args, env);
+    	// TODO: count the number of arguments == 2
+    	params = {"host": args[0], "port": args[1]}
+        var response = tcpsocket.getInstance().InvokeMethod("connect", params);
+        var data = JSON.parse(response);
+        console.log("connect: " + JSON.stringify(response));
+    
+        if (data.error !== undefined) {
+    		result.error();
+        } else {
+    		result.ok();
+       }
+};
+
+module.exports = exports;
+
+function lineArgsFromArray(args) {
+	    var cmd = "";
+
+	    if ("callbackId" in args) {
+	        cmd += decodeURIComponent(args.callbackId);
+		}
+	    if ("0" in args) {
+	        if (cmd.length > 0) {
+	            cmd += " ";
+			}
+	        cmd += decodeURIComponent(args["0"]);
+	    }
+
+		return cmd;
+}
+
+function cmdLineForMethod(method, args) {
+	    var cmd = lineArgsFromArray(args);
+	    if (cmd.length > 0) {
+	        return method + " " + cmd;
+		} else {
+	        return method;
+		}
+}
+
+JNEXT.Socket = function () {
+		var self = this,
+			hasInstance = false;
+
+		self.init = function () {
+			console.log("Initializing Native Socket Class.");
+			if (!JNEXT.require("libTCPSocketLib")) {
+				return false;
+			}
+
+			self.m_id = JNEXT.createObject("libTCPSocketLib.TCPSocketLib_JS");
+
+			if (self.m_id === "") {
+				return false;
+			}
+
+			JNEXT.registerEvents(self);
+		};
+
+		self.getId = function () {
+			return self.m_id;
+		};
+
+	    self.InvokeMethod = function (method, args) {
+	        //This is how Javascript calls into native
+	        return JNEXT.invoke(self.m_id, cmdLineForMethod(method, args));
+	    };
+
+		// Fired by the Event framework (used by asynchronous callbacks)
+		self.onEvent = function (strData) {
+			var arData = strData.split(" "),
+				callbackId = arData[0],
+				result = resultObjs[callbackId],
+				data = arData.slice(1, arData.length).join(" ");
+
+			if (result) {
+				if (callbackId != threadCallback) {
+					result.callbackOk(data, false);
+					delete resultObjs[callbackId];
+				} else {
+					result.callbackOk(data, true);
+				}
+			}
+		};
+
+		self.m_id = "";
+
+		self.getInstance = function () {
+			if (!hasInstance) {
+				hasInstance = true;
+				self.init();
+			}
+			return self;
+		};
+};
+
+tcpsocket = new JNEXT.Socket();
+//alert(tcpsocket.getInstance().getId());
